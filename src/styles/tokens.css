@@ -1,0 +1,121 @@
+/* Strata design tokens.
+   Concept: layered stone. Chrome is a lit, fine-grained stratum; panes are
+   deep glass plates set into it; one living light (the project color) moves
+   through the spine. Obsidian (dark, default) and Ivory (light). */
+
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-window: 10px;
+
+  --d-instant: 60ms; --d-fast: 120ms; --d-base: 180ms; --d-slow: 240ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --font-ui: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --fs-body: 13px; --fs-secondary: 12px; --fs-caption: 11px; --fs-title: 15px; --fs-display: 20px;
+
+  --titlebar-h: 38px; --statusbar-h: 26px; --rail-w: 52px; --rail-w-expanded: 232px;
+  --pane-gap: 8px; --pane-inset-x: 16px; --pane-inset-y: 12px; --pane-gutter: 24px;
+
+  /* fine mineral grain, tiled */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- Obsidian ---------- */
+:root, :root[data-theme="obsidian"] {
+  color-scheme: dark;
+  --project: #8AB4FF;
+
+  --basalt: #0B0D12;
+  --stratum-top: #1F2535;
+  --stratum-bottom: #12161F;
+  --plate: #0A0C11;
+  --plate-top: #0E1219;
+  --grain-opacity: 0.06;
+  --edge-light: rgba(255,255,255,0.07);
+  --edge-dark: rgba(0,0,0,0.55);
+
+  --background: var(--plate);
+  --surface: #12161E;
+  --surface-elevated: #1B2029;
+  --surface-hover: rgba(255,255,255,0.045);
+  --surface-active: rgba(255,255,255,0.085);
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.11);
+  --text-primary: #E8EAEF;
+  --text-secondary: #A4AAB8;
+  --text-muted: #6C7382;
+  --accent: #8AB4FF;
+  --accent-subtle: rgba(138,180,255,0.13);
+  --success: #7FD19A;
+  --warning: #E8BB6E;
+  --error: #F27C86;
+  --info: #8AB4FF;
+  --search-match: rgba(232,187,110,0.30);
+  --selection: rgba(138,180,255,0.32);
+  --agent: #B9A7F5;
+  --agent-subtle: rgba(185,167,245,0.12);
+
+  --shadow-plate: 0 10px 28px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.045);
+  --shadow-plate-focus: 0 10px 28px rgba(0,0,0,0.45), 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 14%, transparent), inset 0 1px 0 rgba(255,255,255,0.06);
+  --shadow-float: 0 18px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.35);
+
+  --t-bg: #090B10; --t-fg: #D8DBE2; --t-cursor: #8AB4FF;
+  --t-black: #1B2029; --t-red: #F27C86; --t-green: #7FD19A; --t-yellow: #E8BB6E;
+  --t-blue: #8AB4FF; --t-magenta: #C7A3F2; --t-cyan: #77D6E2; --t-white: #C9CDD6;
+  --t-bblack: #4C5464; --t-bred: #F6A2A9; --t-bgreen: #A3E0B4; --t-byellow: #F2CF92;
+  --t-bblue: #A9C7FF; --t-bmagenta: #DABEF7; --t-bcyan: #9CE6EE; --t-bwhite: #EEF0F4;
+}
+
+/* ---------- Ivory ---------- */
+:root[data-theme="ivory"] {
+  color-scheme: light;
+  --project: #3B6FD9;
+
+  --basalt: #DCD9D0;
+  --stratum-top: #F3F1EA;
+  --stratum-bottom: #E1DED5;
+  --plate: #FCFBF8;
+  --plate-top: #FFFFFF;
+  --grain-opacity: 0.06;
+  --edge-light: rgba(255,255,255,0.9);
+  --edge-dark: rgba(0,0,0,0.12);
+
+  --background: var(--plate);
+  --surface: #F3F1EB;
+  --surface-elevated: #FFFFFF;
+  --surface-hover: rgba(0,0,0,0.04);
+  --surface-active: rgba(0,0,0,0.08);
+  --border-subtle: rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.13);
+  --text-primary: #1E2229;
+  --text-secondary: #5A616D;
+  --text-muted: #8B929E;
+  --accent: #3B6FD9;
+  --accent-subtle: rgba(59,111,217,0.11);
+  --success: #1F883D;
+  --warning: #9A6700;
+  --error: #CF222E;
+  --info: #3B6FD9;
+  --search-match: rgba(154,103,0,0.22);
+  --selection: rgba(59,111,217,0.24);
+  --agent: #6D4FD2;
+  --agent-subtle: rgba(109,79,210,0.10);
+
+  --shadow-plate: 0 8px 22px rgba(30,34,41,0.12), 0 1px 3px rgba(30,34,41,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+  --shadow-plate-focus: 0 8px 22px rgba(30,34,41,0.12), 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 20px color-mix(in srgb, var(--accent) 16%, transparent), inset 0 1px 0 rgba(255,255,255,0.9);
+  --shadow-float: 0 18px 44px rgba(30,34,41,0.18), 0 2px 8px rgba(30,34,41,0.10), 0 0 0 1px rgba(0,0,0,0.08);
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.10);
+
+  --t-bg: #FCFBF8; --t-fg: #1E2229; --t-cursor: #3B6FD9;
+  --t-black: #24292F; --t-red: #CF222E; --t-green: #1A7F37; --t-yellow: #9A6700;
+  --t-blue: #0969DA; --t-magenta: #8250DF; --t-cyan: #1B7C83; --t-white: #6E7781;
+  --t-bblack: #57606A; --t-bred: #A40E26; --t-bgreen: #116329; --t-byellow: #7D4E00;
+  --t-bblue: #0550AE; --t-bmagenta: #6639BA; --t-bcyan: #0F5E64; --t-bwhite: #24292F;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-instant: 0ms; --d-fast: 80ms; --d-base: 80ms; --d-slow: 80ms; }
+}
