@@ -48,4 +48,5 @@ export const write = (id: number, data: string) => invoke("pty_write", { id, dat
 export const resize = (id: number, cols: number, rows: number) => invoke("pty_resize", { id, cols, rows });
 export const kill = (id: number) => invoke("pty_kill", { id });
 export const discoverProfiles = () => invoke<Profile[]>("discover_profiles");
+export const discoverWsl = () => invoke<Profile[]>("discover_wsl");
 export const homeDir = () => invoke<string>("home_dir");

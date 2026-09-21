@@ -20,6 +20,7 @@ pub fn run() {
             pty::pty_kill,
             pty::pty_list,
             shells::discover_profiles,
+            shells::discover_wsl,
             shells::home_dir,
             agent::agent_spawn,
             agent::agent_send,

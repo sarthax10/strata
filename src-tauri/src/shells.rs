@@ -133,7 +133,13 @@ pub fn discover_profiles() -> Vec<Profile> {
         }
     }
 
-    // WSL distributions
+    out
+}
+
+/// WSL distributions, discovered separately because `wsl -l` can take seconds cold.
+#[tauri::command]
+pub fn discover_wsl() -> Vec<Profile> {
+    let mut out = Vec::new();
     if let Ok(output) = Command::new("wsl.exe").args(["-l", "-q"]).output() {
         // wsl -l outputs UTF-16LE
         let text: String = if output.stdout.len() >= 2 {

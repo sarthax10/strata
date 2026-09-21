@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useStore } from "./state/store";
-import { discoverProfiles, homeDir } from "./core/pty";
+import { discoverProfiles, discoverWsl, homeDir } from "./core/pty";
 import { installKeymap } from "./core/keymap";
 import { TitleBar, Rail, StatusBar, Toasts } from "./components/Chrome";
 import { Canvas } from "./components/Canvas";
@@ -16,7 +16,10 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = useStore.getState().ui.theme;
-    Promise.all([discoverProfiles(), homeDir()]).then(([profiles, home]) => useStore.getState().init(profiles, home));
+    Promise.all([discoverProfiles(), homeDir()]).then(([profiles, home]) => {
+      useStore.getState().init(profiles, home);
+      discoverWsl().then((wsl) => useStore.getState().addProfiles(wsl)).catch(() => {});
+    });
     return installKeymap();
   }, []);
 

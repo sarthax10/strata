@@ -39,6 +39,7 @@ export interface AppState {
   ui: { railExpanded: boolean; railPinned: boolean; paletteOpen: boolean; hints: boolean; theme: "obsidian" | "ivory"; maximized: boolean; runningCount: number; statusHint: string | null };
 
   init(profiles: Profile[], home: string): void;
+  addProfiles(profiles: Profile[]): void;
   activeWorkspace(): Workspace | null;
   newProject(name: string, root?: string): string;
   switchProject(id: string): void;
@@ -83,6 +84,8 @@ export const useStore = create<AppState>((set, get) => ({
       get().newTerminal({ cwd: home });
     }
   },
+
+  addProfiles(profiles) { set((s) => ({ profiles: [...s.profiles, ...profiles.filter((p) => !s.profiles.some((q) => q.id === p.id))] })); },
 
   activeWorkspace() {
     const p = get().activeProjectId ? get().projects[get().activeProjectId!] : null;
