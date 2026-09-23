@@ -36,7 +36,7 @@ fn host_script(app: &AppHandle) -> Result<PathBuf, String> {
     // Development: sibling folder of src-tauri.
     let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("agent-host").join("dist").join("index.js");
     if dev.exists() { return Ok(dev); }
-    Err("agent host not found (run `npm run build` in agent-host)".into())
+    Err("Agent host files are missing from this installation. Reinstall Strata, or run `npm run build` in agent-host when running from source.".into())
 }
 
 #[tauri::command]
@@ -53,7 +53,13 @@ pub fn agent_spawn(app: AppHandle, state: State<'_, Arc<AgentState>>, cwd: Strin
         use std::os::windows::process::CommandExt;
         cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
     }
-    let mut child = cmd.spawn().map_err(|e| format!("spawn node: {e}"))?;
+    let mut child = cmd.spawn().map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            "Node.js is required to run Claude Code. Install Node 20 or later and reopen Strata.".to_string()
+        } else {
+            format!("Could not start the agent host: {e}")
+        }
+    })?;
     let stdin = child.stdin.take().ok_or("no stdin")?;
     let stdout = child.stdout.take().ok_or("no stdout")?;
     let stderr = child.stderr.take().ok_or("no stderr")?;

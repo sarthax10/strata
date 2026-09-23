@@ -156,7 +156,8 @@ export const useAgents = create<AgentsState>((set, get) => ({
         get()._patch(id, () => ({ hostId }));
         await send(hostId, { type: "start", cwd: s.cwd, prompt: text, images: imgs, model: s.model || undefined, effort: s.effort || undefined, permissionMode: s.mode, resume: s.claudeSessionId });
       } catch (e: any) {
-        get()._patch(id, () => ({ status: "failed", error: String(e), now: { kind: "error", label: String(e), since: Date.now() } }));
+        const msg = String(e?.message ?? e).replace(/^Error:\s*/, "");
+        get()._patch(id, () => ({ status: "failed", error: msg, now: { kind: "error", label: msg, since: Date.now() } }));
       }
     } else {
       get()._patch(id, (cur) => ({ status: "working", turns: [...cur.turns, turn], draft: "", tray: [], now: { kind: "thinking", label: "Thinking…", since: Date.now() } }));

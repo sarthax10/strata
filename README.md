@@ -17,15 +17,27 @@ Working today (V1a/V1b slice):
 
 Not yet: persistence/restore, Explorer, Editor/diff review with checkpoints, Browser pane and MCP bridge, Changes/Tasks, session manager, notifications, SSH manager, settings UI.
 
-## Run
+## Install
+
+Download `Strata_0.1.0_x64-setup.exe` from Releases and run it (per-user install, no admin needed).
+
+Requires on the machine:
+
+- **Node.js 20+** — Strata runs the Claude Code agent in a Node process. Without it the terminal works and the Agent pane says what is missing.
+- **Claude Code** signed in (`claude`) for the Agent pane.
+
+## Run from source
 
 ```bash
 npm install
 cd agent-host && npm install && npm run build && cd ..
-npm run tauri dev
+npm run tauri dev       # development
+npm run tauri build     # installer in src-tauri/target/release/bundle/nsis
 ```
 
-Requires Node 22+, Rust 1.85+, and Claude Code installed and signed in (`claude`).
+Requires Node 20+, Rust 1.85+, and Claude Code signed in.
+
+The debug binary in `src-tauri/target/debug` loads the UI from the Vite dev server, so it only works while `npm run tauri dev` is running — use the installer or `target/release/strata.exe` for a standalone app.
 
 ## Layout
 
