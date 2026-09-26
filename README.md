@@ -15,7 +15,10 @@ Working today (V1a/V1b slice):
 - Rail (projects), title-bar palette field, status bar, command palette with fuzzy search.
 - **Agent pane**: the real Claude Code through the Claude Agent SDK (`agent-host/`). Transcript as a work log: user turns, streamed prose, activity rows (Read/Edit/Run/… with verb + object + outcome + duration, expandable to diff/output), thinking rows, turn footer with files/duration/cost, the Now strip, permission decision card (`Enter` allow, `→` always, `Esc` deny), `AskUserQuestion` forms, model pill with effort/mode/context ring, `/` commands (native + Strata), image attachments (paste/drop), `Esc Esc` to stop.
 
-Not yet: persistence/restore, Explorer, Editor/diff review with checkpoints, Browser pane and MCP bridge, Changes/Tasks, session manager, notifications, SSH manager, settings UI.
+- **Persistence**: projects, workspaces, pane layouts, terminal sessions and agent transcripts are snapshotted to `%LOCALAPPDATA%\Strata` and restored on launch. Restored terminals replay their scrollback above a divider and start a fresh shell in the same directory; agent sessions come back with their Claude session id, so the next prompt resumes the real conversation.
+- **Explorer** (`Ctrl+Shift+X`): project tree with per-file git badges, folder rollup dots, branch and ahead/behind, a filter, inline create and rename, delete to the Recycle Bin, and a context menu that hands a path to Claude or opens a terminal there. Files Claude edits light up as it works. A read-only file view opens what you select.
+
+Not yet: editor with diff review and checkpoints, browser pane and MCP bridge, Changes/Tasks views, session manager, notifications, SSH manager, settings UI.
 
 ## Install
 
