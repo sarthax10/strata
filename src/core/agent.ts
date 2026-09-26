@@ -41,7 +41,7 @@ export interface AgentSession {
   context: { used: number; window: number }; costUsd: number;
   models: ModelInfo[]; commands: SlashCommand[]; account?: { email?: string; subscriptionType?: string };
   status: "new" | "starting" | "working" | "needs-you" | "idle" | "failed" | "ended";
-  error?: string; draft: string; tray: ImageAttachment[]; unread: boolean;
+  error?: string; draft: string; tray: ImageAttachment[]; unread: boolean; restored?: boolean;
 }
 
 let seq = 0;
@@ -98,6 +98,7 @@ interface AgentsState {
   rename(id: string, title: string): void;
   markRead(id: string): void;
   remove(id: string): void;
+  hydrate(agents: Record<string, any>, order: string[]): void;
   _patch(id: string, fn: (s: AgentSession) => Partial<AgentSession> | void): void;
 }
 
@@ -192,6 +193,23 @@ export const useAgents = create<AgentsState>((set, get) => ({
     if (s?.hostId != null) invoke("agent_kill", { id: s.hostId });
     set((st) => { const sessions = { ...st.sessions }; delete sessions[id]; return { sessions, order: st.order.filter((x) => x !== id) }; });
   },
+  hydrate(agents, order) {
+    const sessions: Record<string, AgentSession> = {};
+    for (const id of order) {
+      const a = agents[id];
+      if (!a) continue;
+      sessions[id] = {
+        id: a.id, hostId: null, cwd: a.cwd, title: a.title, claudeSessionId: a.claudeSessionId,
+        model: a.model ?? "", effort: a.effort ?? "", mode: a.mode ?? "default",
+        turns: (a.turns ?? []).map((t: Turn) => (t.status === "running" ? { ...t, status: "interrupted" as const } : t)),
+        now: { kind: "idle", label: "", since: Date.now() }, permissions: [],
+        context: a.context ?? { used: 0, window: 200000 }, costUsd: a.costUsd ?? 0,
+        models: [], commands: [], status: "idle", draft: a.draft ?? "", tray: [], unread: false, restored: true,
+      };
+    }
+    set({ sessions, order: order.filter((id) => sessions[id]) });
+  },
+
   _patch(id, fn) {
     set((st) => { const cur = st.sessions[id]; if (!cur) return {}; const p = fn(cur); return p ? { sessions: { ...st.sessions, [id]: { ...cur, ...p } } } : {}; });
   },

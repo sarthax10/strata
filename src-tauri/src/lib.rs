@@ -1,6 +1,7 @@
 mod agent;
 mod pty;
 mod shells;
+mod state;
 
 use std::sync::Arc;
 
@@ -25,6 +26,12 @@ pub fn run() {
             agent::agent_spawn,
             agent::agent_send,
             agent::agent_kill,
+            state::state_save,
+            state::state_load,
+            state::scrollback_save,
+            state::scrollback_load,
+            state::scrollback_prune,
+            state::path_exists,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

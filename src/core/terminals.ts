@@ -4,6 +4,7 @@ import { Terminal, type ITheme } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { SearchAddon } from "@xterm/addon-search";
+import { SerializeAddon } from "@xterm/addon-serialize";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import * as pty from "./pty";
@@ -12,6 +13,7 @@ export interface TermInstance {
   term: Terminal;
   fit: FitAddon;
   search: SearchAddon;
+  serializer: SerializeAddon;
   ptyId: number | null;
   exited: boolean;
   exitCode: number | null;
@@ -61,11 +63,13 @@ export function create(sessionId: string): TermInstance {
   });
   const fit = new FitAddon();
   const search = new SearchAddon();
+  const serializer = new SerializeAddon();
   term.loadAddon(fit);
   term.loadAddon(search);
+  term.loadAddon(serializer);
   term.loadAddon(new WebLinksAddon((_e, uri) => { openUrl(uri); }));
 
-  const inst: TermInstance = { term, fit, search, ptyId: null, exited: false, exitCode: null, title: "" };
+  const inst: TermInstance = { term, fit, search, serializer, ptyId: null, exited: false, exitCode: null, title: "" };
 
   term.onTitleChange((t) => { inst.title = t; inst.onTitle?.(t); });
   term.onData((d) => { if (inst.ptyId != null && !inst.exited) pty.write(inst.ptyId, d); });
@@ -112,6 +116,21 @@ export async function start(inst: TermInstance, profile: pty.Profile, cwd?: stri
   });
   inst.ptyId = res.id;
   pty.resize(res.id, inst.term.cols, inst.term.rows);
+}
+
+/** Text of a session's recent scrollback, with colors, for persistence. */
+export function serialize(sessionId: string, scrollback = 2000): string | null {
+  const inst = registry.get(sessionId);
+  if (!inst) return null;
+  try { return inst.serializer.serialize({ scrollback }); } catch { return null; }
+}
+
+/** Write restored history above a divider, then let the fresh shell take over. */
+export function replay(inst: TermInstance, text: string) {
+  const ESC = String.fromCharCode(27);
+  const CRLF = String.fromCharCode(13, 10);
+  inst.term.write(text.replace(/[\r\n]+$/, ""));
+  inst.term.write(CRLF + ESC + "[38;2;108;115;130m── restored · shell restarted ──" + ESC + "[0m" + CRLF);
 }
 
 export function dispose(sessionId: string) {

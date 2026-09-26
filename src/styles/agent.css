@@ -137,3 +137,14 @@
 .decision .opt .radio { color: var(--accent); width: 12px; }
 .decision .opt .sec { font-size: var(--fs-secondary); }
 .btn[disabled] { opacity: 0.4; }
+
+/* restored-session notice */
+.restored-note {
+  flex: none; display: flex; align-items: center; gap: 8px;
+  margin: 0 var(--sp-3) var(--sp-2); padding: 6px 10px;
+  border-radius: var(--r-sm); background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  color: var(--text-secondary); font-size: var(--fs-secondary);
+}
+.restored-note .link { color: var(--agent); }
+.restored-note .link:hover { text-decoration: underline; }

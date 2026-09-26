@@ -187,6 +187,21 @@ export function neighbor(panes: LaidOutPane[], paneId: string, dir: Dir): string
   return best?.id ?? null;
 }
 
+/** Drop leaves whose pane fails `keep`; collapses empty splits. */
+export function prune(node: LayoutNode, keep: (paneId: string) => boolean): LayoutNode | null {
+  if (node.kind === "leaf") return keep(node.paneId) ? node : null;
+  const kept: LayoutNode[] = [];
+  const ratios: number[] = [];
+  node.children.forEach((c, i) => {
+    const p = prune(c, keep);
+    if (p) { kept.push(p); ratios.push(node.ratios[i]); }
+  });
+  if (kept.length === 0) return null;
+  if (kept.length === 1) return kept[0];
+  const total = ratios.reduce((a, b) => a + b, 0) || 1;
+  return { ...node, children: kept, ratios: ratios.map((r) => r / total) };
+}
+
 /** Swap two panes' positions in the tree. */
 export function swap(root: LayoutNode, a: string, b: string): LayoutNode {
   const walk = (n: LayoutNode): LayoutNode => {

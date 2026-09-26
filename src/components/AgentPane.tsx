@@ -16,6 +16,7 @@ export function AgentPane({ agentId, focused }: { agentId: string; focused: bool
       <AgentHeader s={s} />
       <Transcript s={s} />
       <NowStrip s={s} />
+      {s.restored && s.turns.length > 0 && <RestoredNote s={s} />}
       {s.permissions.length ? <DecisionCard s={s} req={s.permissions[0]} /> : <Composer s={s} focused={focused} />}
     </div>
   );
@@ -335,6 +336,26 @@ function ruleLabel(req: PermissionRequest): string | null {
 }
 
 // ---------------- composer ----------------
+
+/** Shown once after a restart: says what happened and offers to pick it up. */
+function RestoredNote({ s }: { s: AgentSession }) {
+  const { send } = useAgents.getState();
+  const last = s.turns[s.turns.length - 1];
+  const stopped = last?.status === "interrupted";
+  const tool = stopped ? [...last.items].reverse().find((i) => i.kind === "tool") : undefined;
+  return (
+    <div className="restored-note">
+      {stopped ? (
+        <>
+          <span>Strata closed while Claude was working{tool && tool.kind === "tool" ? `, at ${describeTool(tool).verb.toLowerCase()} ${describeTool(tool).object}` : ""}.</span>
+          <button className="link" onClick={() => send(s.id, "Continue where you left off.")}>Continue</button>
+        </>
+      ) : (
+        <span>Earlier session restored. Your next message picks up the conversation.</span>
+      )}
+    </div>
+  );
+}
 
 function Composer({ s, focused }: { s: AgentSession; focused: boolean }) {
   const { send, setDraft, addTray, removeTray, interrupt, setModel, setEffort, setMode } = useAgents.getState();
