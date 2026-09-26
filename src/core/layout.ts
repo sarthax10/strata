@@ -51,6 +51,16 @@ export function parentOfLeaf(root: LayoutNode, paneId: string): SplitNode | null
   return l ? parentOf(root, l.id) : null;
 }
 
+/** Add a fixed-ish column at the left edge of the whole layout. */
+export function prependColumn(root: LayoutNode, newPaneId: string, share: number): LayoutNode {
+  const newLeaf = leaf(newPaneId);
+  if (root.kind === "split" && root.orientation === "row") {
+    const ratios = root.ratios.map((r) => r * (1 - share));
+    return { ...root, children: [newLeaf, ...root.children], ratios: [share, ...ratios] };
+  }
+  return { kind: "split", id: nid(), orientation: "row", children: [newLeaf, root], ratios: [share, 1 - share] };
+}
+
 /** Add a full-height column at the right edge of the whole layout taking `share` of the width. */
 export function appendColumn(root: LayoutNode, newPaneId: string, share: number): LayoutNode {
   const newLeaf = leaf(newPaneId);

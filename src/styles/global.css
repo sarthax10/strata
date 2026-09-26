@@ -6,6 +6,7 @@
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/700.css";
 @import "./agent.css";
+@import "./explorer.css";
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
@@ -157,7 +158,10 @@ button { background: none; border: 0; padding: 0; cursor: default; }
               opacity var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease);
 }
 .pane.focused { box-shadow: var(--shadow-plate-focus); }
-.pane.entering { opacity: 0; transform: scale(0.97); }
+/* Entry is a one-shot CSS animation keyed to the element, so a throttled
+   frame (occluded window) can never leave a pane stuck invisible. */
+.pane { animation: plate-in var(--d-base) var(--ease); }
+@keyframes plate-in { from { opacity: 0; transform: scale(0.97); } }
 .pane.shake { animation: shake 200ms var(--ease); }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
 
@@ -191,6 +195,11 @@ button { background: none; border: 0; padding: 0; cursor: default; }
 .term-host .xterm-viewport { background: transparent !important; }
 .term-host .xterm-viewport::-webkit-scrollbar { width: 6px; }
 .term-host .xterm-viewport::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+.pane-notice {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px;
+  color: var(--text-muted); font-size: var(--fs-body); text-align: center; padding: 24px;
+}
+
 .exit-bar {
   position: absolute; left: 0; right: 0; bottom: 0; height: 28px; z-index: 3;
   display: flex; align-items: center; padding: 0 var(--sp-3);

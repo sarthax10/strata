@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../state/store";
 import { commands, fuzzy, type Command } from "../core/commands";
 
-const ICON: Record<Command["category"], string> = { Pane: "▦", Workspace: "◫", Project: "●", Terminal: "❯", Appearance: "◐", Session: "◎", Agent: "✦" };
+const ICON: Record<Command["category"], string> = { Pane: "▦", Workspace: "◫", Project: "●", Terminal: "❯", Appearance: "◐", Session: "◎", Agent: "✦", Files: "▤" };
 
 export function Palette() {
   const open = useStore((s) => s.ui.paletteOpen);

@@ -5,9 +5,9 @@ import type { Profile } from "../core/pty";
 import { useAgents } from "../core/agent";
 import * as P from "../core/persist";
 
-export type PaneType = "terminal" | "agent" | "empty";
+export type PaneType = "terminal" | "agent" | "explorer" | "file" | "empty";
 
-export interface Pane { id: string; type: PaneType; sessionId?: string; agentId?: string }
+export interface Pane { id: string; type: PaneType; sessionId?: string; agentId?: string; filePath?: string }
 export interface Session {
   id: string; profileId: string; title: string; cwd?: string;
   running: boolean; exited: boolean; exitCode: number | null; failed: boolean;
@@ -54,6 +54,10 @@ export interface AppState {
   splitPane(dir: L.Dir): void;
   newAgent(opts?: { cwd?: string }): void;
   focusAgent(): void;
+  openFolder(path: string, name?: string): string;
+  toggleExplorer(): void;
+  openFile(path: string): void;
+  askClaudeAbout(path: string): void;
   closePane(paneId?: string): void;
   undoClose(): void;
   focusPane(paneId: string): void;
@@ -265,6 +269,73 @@ export const useStore = create<AppState>((set, get) => ({
       panes: { ...s.panes, [paneId]: { id: paneId, type: "agent", agentId } },
       workspaces: { ...s.workspaces, [ws.id]: { ...ws, tree, focusedPaneId: paneId, zoomedPaneId: null } },
     }));
+  },
+
+  openFolder(path, name) {
+    const clean = path.replace(/[\\/]+$/, "");
+    const label = name ?? clean.replace(/\\/g, "/").split("/").filter(Boolean).slice(-1)[0] ?? "Project";
+    const existing = get().projectOrder.find((id) => get().projects[id].root?.toLowerCase() === clean.toLowerCase());
+    if (existing) { get().switchProject(existing); return existing; }
+    const id = get().newProject(label, clean);
+    get().switchProject(id);
+    get().newTerminal({ cwd: clean });
+    get().toggleExplorer();
+    return id;
+  },
+
+  toggleExplorer() {
+    const st = get();
+    const ws = st.activeWorkspace(); if (!ws) return;
+    const existing = ws.tree ? L.leaves(ws.tree).find((l) => st.panes[l.paneId]?.type === "explorer") : undefined;
+    if (existing) { st.closePane(existing.paneId); return; }
+    const paneId = uid("pane");
+    const tree = ws.tree ? L.prependColumn(ws.tree, paneId, 0.2) : L.leaf(paneId);
+    set((s) => ({
+      panes: { ...s.panes, [paneId]: { id: paneId, type: "explorer" } },
+      workspaces: { ...s.workspaces, [ws.id]: { ...ws, tree, zoomedPaneId: null } },
+    }));
+  },
+
+  openFile(path) {
+    const st = get();
+    const ws = st.activeWorkspace(); if (!ws) return;
+    // Reuse the file pane if one is open, so browsing does not pile up panes.
+    const existing = ws.tree ? L.leaves(ws.tree).find((l) => st.panes[l.paneId]?.type === "file") : undefined;
+    if (existing) {
+      set((s) => ({
+        panes: { ...s.panes, [existing.paneId]: { ...s.panes[existing.paneId], filePath: path } },
+        workspaces: { ...s.workspaces, [ws.id]: { ...ws, focusedPaneId: existing.paneId } },
+      }));
+      return;
+    }
+    const paneId = uid("pane");
+    let tree: L.LayoutNode;
+    if (!ws.tree) tree = L.leaf(paneId);
+    else {
+      // Open beside the explorer if there is one, otherwise split the focus.
+      const anchor = L.leaves(ws.tree).find((l) => st.panes[l.paneId]?.type === "explorer")?.paneId
+        ?? ws.focusedPaneId ?? L.leaves(ws.tree)[0].paneId;
+      tree = L.split(ws.tree, anchor, paneId, "right");
+    }
+    set((s) => ({
+      panes: { ...s.panes, [paneId]: { id: paneId, type: "file", filePath: path } },
+      workspaces: { ...s.workspaces, [ws.id]: { ...ws, tree, focusedPaneId: paneId, zoomedPaneId: null } },
+    }));
+  },
+
+  askClaudeAbout(path) {
+    const st = get();
+    const ws = st.activeWorkspace(); if (!ws) return;
+    const A = useAgents.getState();
+    let agentId = ws.tree
+      ? L.leaves(ws.tree).map((l) => st.panes[l.paneId]).find((p) => p?.type === "agent")?.agentId
+      : undefined;
+    if (!agentId) { st.newAgent(); agentId = useAgents.getState().order[useAgents.getState().order.length - 1]; }
+    if (!agentId) return;
+    const rel = path.replace(/\\/g, "/");
+    const cur = useAgents.getState().sessions[agentId]?.draft ?? "";
+    A.setDraft(agentId, `${cur}${cur && !cur.endsWith(" ") ? " " : ""}@${rel} `);
+    st.focusAgent();
   },
 
   focusAgent() {

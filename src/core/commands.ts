@@ -1,10 +1,11 @@
 // Command registry: every action reachable from the palette and keymap.
 import { useStore } from "../state/store";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 
 export interface Command {
   id: string;
   title: string;
-  category: "Pane" | "Workspace" | "Project" | "Terminal" | "Appearance" | "Session" | "Agent";
+  category: "Pane" | "Workspace" | "Project" | "Terminal" | "Appearance" | "Session" | "Agent" | "Files";
   shortcut?: string;
   run: () => void;
   when?: () => boolean;
@@ -16,6 +17,11 @@ export function commands(): Command[] {
   const list: Command[] = [
     { id: "agent.focus", title: "Ask Claude", category: "Agent", shortcut: "Ctrl+Shift+A", run: () => s.focusAgent() },
     { id: "agent.new", title: "New Claude session", category: "Agent", shortcut: "Ctrl+Shift+Alt+A", run: () => s.newAgent() },
+    { id: "project.openFolder", title: "Open folder\u2026", category: "Project", run: async () => {
+      const picked = await openDialog({ directory: true, multiple: false, title: "Open folder in Strata" });
+      if (typeof picked === "string") s.openFolder(picked);
+    } },
+    { id: "explorer.toggle", title: "Toggle file explorer", category: "Files", shortcut: "Ctrl+Shift+X", run: () => s.toggleExplorer() },
     { id: "terminal.new", title: "New terminal", category: "Terminal", shortcut: "Ctrl+Shift+T", run: () => s.newTerminal() },
     { id: "pane.splitRight", title: "Split right", category: "Pane", shortcut: "Ctrl+Shift+D", run: () => s.splitPane("right"), when: hasPane },
     { id: "pane.splitDown", title: "Split down", category: "Pane", shortcut: "Ctrl+Shift+E", run: () => s.splitPane("down"), when: hasPane },

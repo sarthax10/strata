@@ -1,8 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useStore } from "../state/store";
 import * as L from "../core/layout";
 import { TerminalPane } from "./TerminalPane";
 import { AgentPane } from "./AgentPane";
+import { Explorer } from "./Explorer";
+import { FilePane } from "./FilePane";
 import { useAgents } from "../core/agent";
 
 const GAP = 6;
@@ -33,19 +35,6 @@ export function Canvas() {
   const alone = laid.panes.length === 1;
   const order = ws?.tree ? L.leaves(ws.tree).map((l) => l.paneId) : [];
 
-  // Track panes that just appeared for the enter animation.
-  const seen = useRef(new Set<string>());
-  const [entering, setEntering] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    const fresh = laid.panes.map((p) => p.paneId).filter((id) => !seen.current.has(id));
-    if (fresh.length) {
-      fresh.forEach((id) => seen.current.add(id));
-      setEntering(new Set(fresh));
-      const t = requestAnimationFrame(() => requestAnimationFrame(() => setEntering(new Set())));
-      return () => cancelAnimationFrame(t);
-    }
-  }, [laid.panes.map((p) => p.paneId).join("|")]);
-
   return (
     <div className={`canvas ${railHidden ? "no-rail" : ""}`} ref={ref}>
       {!ws?.tree && (
@@ -69,14 +58,16 @@ export function Canvas() {
           <div
             key={paneId}
             data-pane={paneId}
-            className={`pane ${focused ? "focused" : ""} ${alone ? "alone" : ""} ${entering.has(paneId) ? "entering" : ""}`}
+            className={`pane ${focused ? "focused" : ""} ${alone ? "alone" : ""}`}
             style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h }}
             onMouseDown={() => { if (!focused) focusPane(paneId); }}
           >
             {!alone && (
               <div className="pane-header" onDoubleClick={toggleZoom}>
                 <span className="title">
-                  {pane.type === "agent"
+                  {pane.type === "explorer" ? "Explorer"
+                    : pane.type === "file" ? (pane.filePath ?? "").replace(/\\/g, "/").split("/").slice(-1)[0]
+                    : pane.type === "agent"
                     ? <>{agents[pane.agentId!]?.status === "working" ? "● " : agents[pane.agentId!]?.status === "needs-you" ? "◆ " : ""}{agents[pane.agentId!]?.title ?? "Claude"}</>
                     : <>{session?.running ? "● " : session?.failed ? "✕ " : ""}{session?.title ?? "Terminal"}</>}
                 </span>
@@ -89,6 +80,8 @@ export function Canvas() {
             {idx >= 0 && idx < 9 && <div className="pane-badge">{idx + 1}</div>}
             {pane.type === "terminal" && pane.sessionId && <TerminalPane sessionId={pane.sessionId} focused={focused} />}
             {pane.type === "agent" && pane.agentId && <AgentPane agentId={pane.agentId} focused={focused} />}
+            {pane.type === "explorer" && <Explorer />}
+            {pane.type === "file" && pane.filePath && <FilePane path={pane.filePath} />}
           </div>
         );
       })}

@@ -19,12 +19,24 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = useStore.getState().ui.theme;
-    Promise.all([discoverProfiles(), homeDir(), P.loadState()]).then(([profiles, home, snapshot]) => {
-      useStore.getState().init(profiles, home, snapshot);
-      setReady(true);
-      installAutosave();
-      discoverWsl().then((wsl) => useStore.getState().addProfiles(wsl)).catch(() => {});
-    });
+    Promise.all([discoverProfiles(), homeDir(), P.loadState().catch(() => null)])
+      .then(([profiles, home, snapshot]) => {
+        // A bad snapshot must never stop the app from opening: fall back to a
+        // fresh session and tell the user what happened.
+        try {
+          useStore.getState().init(profiles, home, snapshot);
+        } catch (e) {
+          console.error("restore failed", e);
+          useStore.getState().init(profiles, home, null);
+          useStore.getState().toast({ title: "Could not restore your last session", sub: "Started fresh instead.", kind: "error" });
+        }
+      })
+      .catch((e) => console.error("startup failed", e))
+      .finally(() => {
+        setReady(true);
+        installAutosave();
+        discoverWsl().then((wsl) => useStore.getState().addProfiles(wsl)).catch(() => {});
+      });
     return installKeymap();
   }, []);
 

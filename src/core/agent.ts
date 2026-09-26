@@ -85,6 +85,8 @@ export function describeTool(t: { name: string; input: Record<string, unknown>; 
 interface AgentsState {
   sessions: Record<string, AgentSession>;
   order: string[];
+  /** Absolute path (forward slashes) -> when the agent last changed it. */
+  touched: Record<string, number>;
   create(cwd: string, title?: string): string;
   send(id: string, text: string, images?: ImageAttachment[]): Promise<void>;
   decide(id: string, requestId: string, behavior: "allow" | "deny", extra?: { message?: string; updatedInput?: Record<string, unknown>; updatedPermissions?: unknown[] }): void;
@@ -131,7 +133,7 @@ async function ensureListeners() {
 const send = (hostId: number, obj: unknown) => invoke("agent_send", { id: hostId, line: JSON.stringify(obj) });
 
 export const useAgents = create<AgentsState>((set, get) => ({
-  sessions: {}, order: [],
+  sessions: {}, order: [], touched: {},
 
   create(cwd, title) {
     const id = uid("a");
@@ -322,6 +324,7 @@ function handleHostMessage(sid: string, msg: any) {
             const text = typeof r.content === "string" ? r.content : (r.content ?? []).map((c: any) => (c.type === "text" ? c.text : "")).join("\n");
             const isErr = !!r.is_error;
             if (now.toolId === it.id) now = { kind: "thinking", label: "Thinking…", since: Date.now() };
+            if (!isErr && it.family === "edit") markTouched([it]);
             return { ...it, status: it.status === "denied" ? "denied" : isErr ? "failed" : "done", endedAt: Date.now(), result: text.slice(0, 20000), resultIsError: isErr, structured: m.tool_use_result };
           }),
         }));
@@ -353,6 +356,18 @@ function handleHostMessage(sid: string, msg: any) {
 
 export function wantVerb(f: ToolFamily): string {
   return { read: "read", edit: "edit", run: "run", browser: "use the browser on", web: "fetch", agent: "delegate", plan: "update the plan", question: "ask", mcp: "use", other: "use" }[f];
+}
+
+/** Record files an edit tool wrote, for the Explorer's activity dots. */
+function markTouched(items: Item[]) {
+  const now = Date.now();
+  const paths: Record<string, number> = {};
+  for (const it of items) {
+    if (it.kind !== "tool" || it.family !== "edit") continue;
+    const p = (it.input as any).file_path ?? (it.input as any).notebook_path;
+    if (p) paths[String(p).replace(/\\/g, "/")] = now;
+  }
+  if (Object.keys(paths).length) useAgents.setState((s) => ({ touched: { ...s.touched, ...paths } }));
 }
 
 function filesChangedIn(t: Turn): string[] {

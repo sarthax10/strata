@@ -1,4 +1,5 @@
 mod agent;
+mod files;
 mod pty;
 mod shells;
 mod state;
@@ -32,6 +33,13 @@ pub fn run() {
             state::scrollback_load,
             state::scrollback_prune,
             state::path_exists,
+            files::read_dir,
+            files::git_status,
+            files::create_path,
+            files::rename_path,
+            files::trash_path,
+            files::reveal_in_explorer,
+            files::read_text_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

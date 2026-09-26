@@ -42,6 +42,15 @@ export function TerminalPane({ sessionId, focused }: { sessionId: string; focuse
     if (focused) inst.term.focus(); else inst.term.blur();
   }, [focused, sessionId]);
 
+  if (!profile) {
+    return (
+      <div className="pane-notice">
+        <div>This shell is no longer available on this machine.</div>
+        <button className="btn" onClick={() => useStore.getState().newTerminal()}>Open the default shell</button>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="term-host" ref={hostRef} />

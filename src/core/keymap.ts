@@ -24,6 +24,7 @@ export function installKeymap(): () => void {
   const map: Record<string, Handler> = {
     "Ctrl+Shift+T": () => s().newTerminal(),
     "Ctrl+Shift+A": () => s().focusAgent(),
+    "Ctrl+Shift+X": () => s().toggleExplorer(),
     "Ctrl+Shift+Alt+A": () => s().newAgent(),
     "Ctrl+Shift+D": () => s().splitPane("right"),
     "Ctrl+Shift+E": () => s().splitPane("down"),
